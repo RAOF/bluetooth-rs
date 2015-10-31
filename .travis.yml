@@ -1,14 +1,36 @@
+sudo: false
 language: rust
 rust:
-  - stable
-  - beta
   - nightly
-script:
-  - cargo test --features test_without_hardware
+  - beta
+  - stable
 matrix:
   allow_failures:
     - rust: nightly
+before_script:
+- |
+  pip install 'travis-cargo<0.2' --user &&
+  export PATH=$HOME/.local/bin:$PATH
+script:
+- |
+  travis-cargo build &&
+  travis-cargo test -- --features test_without_hardware &&
+  travis-cargo bench &&
+  travis-cargo --only stable doc
 addons:
   apt:
     packages:
-      - libbluetooth-dev
+    - libcurl4-openssl-dev
+    - libelf-dev
+    - libdw-dev
+    - libbluetooth-dev
+after_success:
+  - travis-cargo --only stable doc-upload
+  - travis-cargo coveralls --no-sudo
+notifications:
+  email:
+    on_success: never
+env:
+  global:
+  - TRAVIS_CARGO_NIGHTLY_FEATURE=dev
+    secure=3xfeT8JWermKzpAOI8BoChYzCagxvR4uRypD8Mvyjo+qnxT3xfm7jbaaBVL+RUU17I7OQI4GehUMBsX4GuZ8kWl9vI0GTmN3zWaVIIvC2JaI9ViHuXFn5aVTgKHlEysL4STLh/uKRV5FGZYcM3RhfwDBDMPqVWUhhVaD2i4k1Ik+uL/if/e5XMahlubetFUM3rFLOjq9sq6zvvxf7GoI8XOznD+UHqTlxq4iRW62XivSXA8s2BDwg8rUafrI83SyR7TJhSHVO3M48HwE6dBNV6HSST1zYRdJDPXCC0e/1vpuw5TIkHR1vJdoSYvehFYlfayFnpDA/lLKSLnlD+eZ0UBPcVOvZAqBqoTD6uG0KVspPjEdDd4xP86K3h2PKnkJHFdyNPUHWyKuzqWe1rorm/t6A8rS51Kvhe3+4YB8HZl83baoJPLy55MGMKZwELgq04RsmlaVUfhINzJ9RftKe+icekQGs8lkqjdvPmbwikM/tP+zGteoICU/t9X3OSXcA8ty0GzyyI9JAK4rBiRrLNqfREkcEIW5MIsuYvzG98ix/C4zIy8Xs8s/pvI800GB8assQ/NbTrDeNrdpZZo11j8GoHra2Of82kCWDAqf2pmbuWHx5RFLZa8knEpFSnaRj1rWRJSCog0hgkNxdOfx9oskq2ZaEHebPlhKg2lbgQA=
